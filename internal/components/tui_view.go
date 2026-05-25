@@ -17,12 +17,14 @@ var (
 	errorStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 )
 
-const startupBanner = `__  __     _                    _
+const startupBanner = `
+__  __     _                    _
 \ \/ /    / \   __ _  ___ _ __ | |_
  \  /    / _ \ / _  |/ _ \ '_ \| __|
  /  \   / ___ \ (_| |  __/ | | | |_
 /_/\_\ /_/   \_\__, |\___|_| |_|\__|
-               |___/`
+               |___/
+`
 
 // View 渲染 TUI。布局保持朴素，方便后续扩展。
 func (m *TUIModel) View() string {
