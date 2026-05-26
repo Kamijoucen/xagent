@@ -16,36 +16,53 @@ func RunReActLoop(ctx *appctx.AppCtx, userInput string) error {
 	if ctx == nil {
 		return fmt.Errorf("AppCtx 不能为空")
 	}
+
+	if ctx.TUI == nil {
+		return fmt.Errorf("TUI 组件未初始化")
+	}
+
 	input := strings.TrimSpace(userInput)
 	if input == "" {
 		return fmt.Errorf("用户输入不能为空")
 	}
 
-	if ctx.TUI != nil {
-		ctx.TUI.SetAgentState(types.AgentStateThinking)
-	}
+	ctx.TUI.SetAgentState(types.AgentStateThinking)
 	if ctx.SessionStore != nil {
-		if err := ctx.SessionStore.AppendMessage(components.DefaultSessionID, types.Message{Role: types.RoleUser, Content: input, CreatedAt: time.Now()}); err != nil {
+		msg := types.Message{Role: types.RoleUser, Content: input, CreatedAt: time.Now()}
+		if err := ctx.SessionStore.AppendMessage(components.DefaultSessionID, msg); err != nil {
 			return fmt.Errorf("保存用户消息失败: %w", err)
 		}
 	}
 
+	// 模拟思考时间
 	select {
 	case <-ctx.Context().Done():
 		return context.Cause(ctx.Context())
 	case <-time.After(120 * time.Millisecond):
+
 	}
 
-	if ctx.TUI != nil {
-		ctx.TUI.SetAgentState(types.AgentStateResponding)
-	}
-	response := "收到：" + input + "\n\n这是第一版 MVP 的本地响应。后续可以在这里接入 LLM 流式输出、工具调用和会话持久化。"
-	if ctx.TUI != nil {
-		ctx.TUI.AppendAssistantMessage(response)
-		ctx.TUI.SetAgentState(types.AgentStateIdle)
-	}
+	ctx.TUI.SetAgentState(types.AgentStateResponding)
+
+	var history []types.Message
 	if ctx.SessionStore != nil {
-		if err := ctx.SessionStore.AppendMessage(components.DefaultSessionID, types.Message{Role: types.RoleAssistant, Content: response, CreatedAt: time.Now()}); err != nil {
+		history = ctx.SessionStore.GetHistory(components.DefaultSessionID)
+	}
+	resp := ctx.LLMClient.StreamChat(ctx.Context(), history)
+
+	var fullResponse strings.Builder
+	for chunk := range resp {
+		if chunk.Err != nil {
+			fmt.Printf("LLM 流式输出错误: %v\n", chunk.Err)
+			break
+		}
+		fullResponse.WriteString(chunk.Content)
+		ctx.TUI.AppendAssistantMessage(chunk.Content)
+	}
+	ctx.TUI.SetAgentState(types.AgentStateIdle)
+	if ctx.SessionStore != nil {
+		msg := types.Message{Role: types.RoleAssistant, Content: fullResponse.String(), CreatedAt: time.Now()}
+		if err := ctx.SessionStore.AppendMessage(components.DefaultSessionID, msg); err != nil {
 			return fmt.Errorf("保存助手消息失败: %w", err)
 		}
 	}
