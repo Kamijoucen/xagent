@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/admin/xagent/internal/agent/types"
 )
@@ -27,7 +28,7 @@ __  __     _                    _
 `
 
 // View 渲染 TUI。布局保持朴素，方便后续扩展。
-func (m *TUIModel) View() string {
+func (m *TUIModel) View() tea.View {
 	width := m.width
 	if width <= 0 {
 		width = 80
@@ -37,12 +38,14 @@ func (m *TUIModel) View() string {
 	status := m.statusLine(width)
 	input := m.input.View()
 
-	return strings.Join([]string{
+	v := tea.NewView(strings.Join([]string{
 		header,
 		m.viewport.View(),
 		input,
 		status,
-	}, "\n")
+	}, "\n"))
+	v.AltScreen = true
+	return v
 }
 
 func (m *TUIModel) statusLine(width int) string {

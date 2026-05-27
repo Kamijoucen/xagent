@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
+	textinput "charm.land/bubbles/v2/textinput"
+	viewport "charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/admin/xagent/internal/agent/types"
 )
@@ -52,9 +52,9 @@ func NewTUIModel() *TUIModel {
 	input.Prompt = "> "
 	input.Focus()
 	input.CharLimit = 4096
-	input.Width = 80
+	input.SetWidth(80)
 
-	vp := viewport.New(80, 18)
+	vp := viewport.New(viewport.WithWidth(80), viewport.WithHeight(18))
 	model := &TUIModel{
 		messages: []types.Message{
 			{Role: types.RoleSystem, Content: "欢迎使用 agent-cli MVP。第一版保留清晰架构，只提供本地假交互。", CreatedAt: time.Now()},

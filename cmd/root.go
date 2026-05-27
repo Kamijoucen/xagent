@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/spf13/cobra"
 
 	"github.com/admin/xagent/internal/agent"
@@ -60,7 +60,7 @@ func NewRootCmd() *cobra.Command {
 				}
 			}()
 
-			program := tea.NewProgram(app.TUI, tea.WithAltScreen())
+			program := tea.NewProgram(app.TUI)
 			app.TUI.SetSender(program.Send)
 			app.TUI.SetSubmitHandler(func(input string) tea.Cmd {
 				return func() tea.Msg {

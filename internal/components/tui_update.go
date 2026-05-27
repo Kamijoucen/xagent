@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/admin/xagent/internal/agent/types"
 )
@@ -19,12 +19,12 @@ func (m *TUIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.input.Width = max(1, msg.Width)
-		m.viewport.Width = msg.Width
-		m.viewport.Height = max(3, msg.Height-6)
+		m.input.SetWidth(max(1, msg.Width))
+		m.viewport.SetWidth(msg.Width)
+		m.viewport.SetHeight(max(3, msg.Height-6))
 		m.syncViewport()
 		return m, nil
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			return m, tea.Quit
